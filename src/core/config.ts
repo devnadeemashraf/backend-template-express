@@ -11,12 +11,14 @@ const JWT_ACCESS_SECRET = getENV<string>(
   "JWT_ACCESS_SECRET",
   "762nmhbUfhcVi0TMyPXwM1sXS1QjyfIRtIgrBmNEii0=",
 );
-const JWT_ACCESS_EXPIRATION = getENV<string>("JWT_ACCESS_EXPIRATION", "1h");
+// 15 * 60 * 1000  = 900,000 milliseconds
+const JWT_ACCESS_EXPIRATION = getENV<number>("JWT_ACCESS_EXPIRATION", 900_000);
 const JWT_REFRESH_SECRET = getENV<string>(
   "JWT_REFRESH_SECRET",
   "762nmhbUfhcVi0TMyPXwM1sXS1QjyfIRtIgrBmNEii0=",
 );
-const JWT_REFRESH_EXPIRATION = getENV<string>("JWT_REFRESH_EXPIRATION", "1h");
+// 7 * 24 * 60 * 60 * 1000  = 604,800,000 milliseconds
+const JWT_REFRESH_EXPIRATION = getENV<number>("JWT_REFRESH_EXPIRATION", 604_800_000);
 
 // CORS
 const CORS_ORIGINS = getENV<string>("CORS_ORIGINS", "http://localhost:3000,http://localhost:8080");
