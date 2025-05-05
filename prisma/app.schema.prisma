@@ -1,0 +1,9 @@
+generator appClient {
+    provider = "prisma-client-js"
+    output   = "../node_modules/@prisma/app-client"
+}
+
+datasource appDatabase {
+    provider = "postgresql"
+    url      = env("PG_APP_URL")
+}

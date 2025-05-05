@@ -1,0 +1,9 @@
+generator logsClient {
+    provider = "prisma-client-js"
+    output   = "../node_modules/@prisma/logs-client"
+}
+
+datasource logsDatabase {
+    provider = "postgresql"
+    url      = env("PG_LOGS_URL")
+}
