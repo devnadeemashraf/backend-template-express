@@ -1,3 +1,6 @@
+// -------------------------------------------------------------------------
+// PRISMA CONFIGURATION
+// -------------------------------------------------------------------------
 generator appClient {
     provider = "prisma-client-js"
     output   = "../node_modules/@prisma/app-client"
@@ -6,4 +9,245 @@ generator appClient {
 datasource appDatabase {
     provider = "postgresql"
     url      = env("PG_APP_URL")
+}
+
+// -------------------------------------------------------------------------
+// ENUMERATIONS
+// -------------------------------------------------------------------------
+
+/**
+ * User account status options
+ * Controls authentication capabilities and visibility
+ */
+enum UserStatus {
+    ACTIVE // Normal functioning account
+    INACTIVE // Account temporarily deactivated by user
+    SUSPENDED // Account temporarily deactivated by admin
+    DELETED // Account permanently deactivated
+}
+
+/**
+ * Status options for follow requests to private accounts
+ */
+enum FollowRequestStatus {
+    PENDING // Request sent but not yet reviewed
+    ACCEPTED // Request approved by account owner
+    REJECTED // Request denied by account owner
+}
+
+// -------------------------------------------------------------------------
+// USER AUTHENTICATION & PROFILE
+// -------------------------------------------------------------------------
+
+/**
+ * Core user model for authentication and relationships
+ * Contains essential fields for account management
+ */
+model User {
+    id String @id @default(uuid())
+
+    // -------------------------
+    // Authentication Fields
+    // -------------------------
+    email        String     @unique
+    username     String     @unique
+    passwordHash String     @map("password_hash")
+    status       UserStatus @default(ACTIVE)
+
+    // Email verification
+    emailVerified           Boolean   @default(false) @map("email_verified")
+    verificationToken       String?   @map("verification_token")
+    verificationTokenExpiry DateTime? @map("verification_token_expiry")
+
+    // Password reset
+    resetToken       String?   @map("reset_token")
+    resetTokenExpiry DateTime? @map("reset_token_expiry")
+
+    // -------------------------
+    // Analytics & Metrics
+    // -------------------------
+    // Counters for quick retrieval without expensive joins
+    followerCount  Int @default(0) @map("follower_count") // Number of users following this user
+    followingCount Int @default(0) @map("following_count") // Number of users this user follows
+
+    // -------------------------
+    // Timestamps
+    // -------------------------
+    createdAt   DateTime  @default(now()) @map("created_at")
+    updatedAt   DateTime  @updatedAt @map("updated_at")
+    lastLoginAt DateTime? @map("last_login_at")
+
+    // -------------------------
+    // Relationships
+    // -------------------------
+    // Extended data
+    profile  Profile?
+    settings UserSettings?
+    sessions Session[]
+
+    // Social graph
+    followedBy     Follow[]        @relation("following") // Users who follow this user
+    following      Follow[]        @relation("follower") // Users this user follows
+    followRequests FollowRequest[] @relation("requestReceiver") // Pending follow requests received
+    sentRequests   FollowRequest[] @relation("requestSender") // Follow requests sent
+
+    // -------------------------
+    // Database optimizations
+    // -------------------------
+    @@index([email])
+    @@index([username])
+    @@map("users")
+}
+
+/**
+ * User profile data beyond core authentication
+ * Contains optional personal and display information
+ */
+model Profile {
+    id     String @id @default(uuid())
+    userId String @unique @map("user_id")
+
+    // Personal information
+    firstName String? @map("first_name")
+    lastName  String? @map("last_name")
+    bio       String?
+    avatar    String? // URL to avatar image
+    phone     String?
+
+    // Timestamps
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // Relationships
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    // Database optimizations
+    @@index([userId])
+    @@map("profiles")
+}
+
+// -------------------------------------------------------------------------
+// USER PREFERENCES & SETTINGS
+// -------------------------------------------------------------------------
+
+/**
+ * User customization preferences and privacy settings
+ * Controls visibility and notification behavior
+ */
+model UserSettings {
+    id     String @id @default(uuid())
+    userId String @unique @map("user_id")
+
+    // Privacy settings
+    isPrivateProfile    Boolean @default(false) @map("is_private_profile")
+    showOnlineStatus    Boolean @default(true) @map("show_online_status")
+    allowTagging        Boolean @default(true) @map("allow_tagging")
+    allowDirectMessages Boolean @default(true) @map("allow_direct_messages")
+
+    // Notification preferences
+    emailNotifications Boolean @default(true) @map("email_notifications")
+    newFollowerNotify  Boolean @default(true) @map("new_follower_notify")
+
+    // Display preferences
+    theme    String @default("light") @map("theme")
+    language String @default("en") @map("language")
+
+    // Timestamps
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // Relationships
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    // Database optimizations
+    @@index([userId])
+    @@map("user_settings")
+}
+
+// -------------------------------------------------------------------------
+// SECURITY & SESSIONS
+// -------------------------------------------------------------------------
+
+/**
+ * Active user sessions for multi-device login management
+ * Enables session tracking and revocation
+ */
+model Session {
+    id     String @id @default(uuid())
+    userId String @map("user_id")
+
+    // Authentication
+    token     String  @unique // JWT or session token
+    ipAddress String? @map("ip_address")
+    userAgent String? @map("user_agent")
+
+    // Session lifecycle
+    expiresAt    DateTime  @map("expires_at")
+    lastActiveAt DateTime  @default(now()) @map("last_active_at")
+    revokedAt    DateTime? @map("revoked_at")
+
+    // Timestamps
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // Relationships
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    // Database optimizations
+    @@index([userId])
+    @@index([token])
+    @@index([expiresAt])
+    @@map("sessions")
+}
+
+// -------------------------------------------------------------------------
+// SOCIAL GRAPH & RELATIONSHIPS
+// -------------------------------------------------------------------------
+
+/**
+ * Follower/following connections between users
+ * Represents established social graph connections
+ */
+model Follow {
+    id          String   @id @default(uuid())
+    followerId  String   @map("follower_id") // User who is following
+    followingId String   @map("following_id") // User being followed
+    createdAt   DateTime @default(now()) @map("created_at")
+
+    // Relationships
+    follower  User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+    following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+    // Database optimizations
+    @@unique([followerId, followingId]) // Prevents duplicate follows
+    @@index([followerId])
+    @@index([followingId])
+    @@map("follows")
+}
+
+/**
+ * Pending follow requests for private accounts
+ * Manages the approval workflow for private profiles
+ */
+model FollowRequest {
+    id         String              @id @default(uuid())
+    senderId   String              @map("sender_id") // User requesting to follow
+    receiverId String              @map("receiver_id") // User with private profile
+    status     FollowRequestStatus @default(PENDING)
+
+    // Timestamps
+    createdAt   DateTime  @default(now()) @map("created_at")
+    updatedAt   DateTime  @updatedAt @map("updated_at")
+    respondedAt DateTime? @map("responded_at") // When request was accepted/rejected
+
+    // Relationships
+    sender   User @relation("requestSender", fields: [senderId], references: [id], onDelete: Cascade)
+    receiver User @relation("requestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+    // Database optimizations
+    @@unique([senderId, receiverId]) // Prevents duplicate requests
+    @@index([senderId])
+    @@index([receiverId])
+    @@index([status])
+    @@map("follow_requests")
 }

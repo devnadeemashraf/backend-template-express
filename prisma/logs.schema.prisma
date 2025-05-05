@@ -1,3 +1,6 @@
+// -------------------------------------------------------------------------
+// PRISMA CONFIGURATION
+// -------------------------------------------------------------------------
 generator logsClient {
     provider = "prisma-client-js"
     output   = "../node_modules/@prisma/logs-client"
@@ -6,4 +9,160 @@ generator logsClient {
 datasource logsDatabase {
     provider = "postgresql"
     url      = env("PG_LOGS_URL")
+}
+
+// -------------------------------------------------------------------------
+// ENUMERATIONS
+// -------------------------------------------------------------------------
+
+/**
+ * Log severity levels for categorizing logs
+ * Follows standard logging level hierarchy
+ */
+enum LogLevel {
+    TRACE // Detailed debugging information
+    DEBUG // Debugging information
+    INFO // Normal application behavior
+    WARN // Potentially harmful situations
+    ERROR // Error events that might still allow the application to continue
+    FATAL // Severe error events that likely lead to application termination
+}
+
+// -------------------------------------------------------------------------
+// REQUEST LOGGING
+// -------------------------------------------------------------------------
+
+/**
+ * Request logs capture incoming HTTP requests
+ * Provides insights into API usage patterns and performance
+ */
+model RequestLog {
+    id        String   @id @unique @default(uuid())
+    timestamp DateTime @default(now()) @map("timestamp")
+
+    // -------------------------
+    // Request details
+    // -------------------------
+    path     String @map("path") // URL path of the request
+    method   String @map("method") // HTTP method (GET, POST, etc.)
+    status   Int    @map("status") // HTTP status code (200, 404, etc.)
+    duration Int    @map("duration") // Time in milliseconds to process
+
+    // -------------------------
+    // Request data
+    // -------------------------
+    query   Json? @map("query") // URL query parameters
+    params  Json? @map("params") // Route parameters
+    headers Json? @map("headers") // Filtered to exclude sensitive info
+    body    Json? @map("body") // Potentially truncated or filtered
+
+    // -------------------------
+    // User context
+    // -------------------------
+    userId    String? @map("user_id") // If authenticated
+    ip        String? @map("ip") // Client IP address
+    userAgent String? @map("user_agent") // Browser/client information
+
+    // -------------------------
+    // For filtering/grouping
+    // -------------------------
+    traceId String? @map("trace_id") // For request tracing across services
+
+    // -------------------------
+    // Database optimizations
+    // -------------------------
+    @@index([userId])
+    @@index([traceId])
+    @@index([timestamp, status])
+    @@index([path, method])
+    @@map("request_logs")
+}
+
+// -------------------------------------------------------------------------
+// ERROR LOGGING
+// -------------------------------------------------------------------------
+
+/**
+ * Error logs capture application errors
+ * Helps in debugging and monitoring application health
+ */
+model ErrorLog {
+    id        String   @id @unique @default(uuid())
+    timestamp DateTime @default(now()) @map("timestamp")
+    level     LogLevel @default(ERROR) @map("level")
+
+    // -------------------------
+    // Error information
+    // -------------------------
+    name    String  @map("name") // Error class/type
+    message String  @map("message") // Error message
+    stack   String? @map("stack") // Stack trace
+
+    // -------------------------
+    // Context information
+    // -------------------------
+    context   Json?   @map("context") // Additional context data
+    requestId String? @map("request_id") // Link to original request if applicable
+
+    // -------------------------
+    // Origin information
+    // -------------------------
+    file     String? @map("file") // Source file
+    line     Int?    @map("line") // Line number
+    function String? @map("function") // Function name
+
+    // -------------------------
+    // For system monitoring
+    // -------------------------
+    service String  @default("api") @map("service") // Service/component name
+    traceId String? @map("trace_id") // For distributed tracing
+
+    // -------------------------
+    // Database optimizations
+    // -------------------------
+    @@index([requestId])
+    @@index([traceId])
+    @@index([timestamp, level])
+    @@index([name])
+    @@map("error_logs")
+}
+
+// -------------------------------------------------------------------------
+// SECURITY AUDIT LOGGING
+// -------------------------------------------------------------------------
+
+/**
+ * Audit logs for security-relevant operations
+ * Critical for compliance and security incident investigations
+ */
+model AuditLog {
+    id        String   @id @unique @default(uuid())
+    timestamp DateTime @default(now()) @map("timestamp")
+
+    // -------------------------
+    // Who performed the action
+    // -------------------------
+    userId String? @map("user_id") // User ID if authenticated
+    ip     String? @map("ip") // Client IP address
+
+    // -------------------------
+    // What was done
+    // -------------------------
+    action     String  @map("action") // e.g., "user.create", "login.success"
+    resource   String? @map("resource") // Resource affected
+    resourceId String? @map("resource_id") // ID of affected resource
+
+    // -------------------------
+    // Additional data
+    // -------------------------
+    metadata Json?  @map("metadata") // Additional context
+    status   String @default("success") @map("status") // success/failure
+
+    // -------------------------
+    // Database optimizations
+    // -------------------------
+    @@index([userId])
+    @@index([timestamp])
+    @@index([action, resource])
+    @@map("audit_logs")
 }

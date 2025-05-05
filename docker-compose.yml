@@ -1,0 +1,129 @@
+name: "${COMPOSE_PROJECT_NAME:-backend-template-express}"
+
+services:
+    # PostgreSQL - Application Database
+    app_db:
+        container_name: bte-app-db
+        image: postgres:16
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 512M
+                reservations:
+                    cpus: '0.5'
+                    memory: 512M
+        environment:
+            POSTGRES_USER: ${PG_APP_USER:-app_user}
+            POSTGRES_PASSWORD: ${PG_APP_PASSWORD:-app_password}
+            POSTGRES_DB: ${PG_APP_DATABASE:-app_db}
+        ports:
+            - "${PG_APP_PORT:-5432}:5432"
+        volumes:
+            - app_db_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${PG_APP_USER:-app_user} -d ${PG_APP_DATABASE:-app_db}"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+        networks:
+            - backend-template-express-net
+
+    # PostgreSQL - Logs Database
+    logs_db:
+        container_name: bte-logs-db
+        image: postgres:16
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 512M
+                reservations:
+                    cpus: '0.5'
+                    memory: 512M
+        environment:
+            POSTGRES_USER: ${PG_LOGS_USER:-logs_user}
+            POSTGRES_PASSWORD: ${PG_LOGS_PASSWORD:-logs_password}
+            POSTGRES_DB: ${PG_LOGS_DATABASE:-logs_db}
+        ports:
+            - "${PG_LOGS_PORT:-5433}:5432" 
+        volumes:
+            - logs_db_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${PG_LOGS_USER:-logs_user} -d ${PG_LOGS_DATABASE:-logs_db}"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+        networks:
+            - backend-template-express-net
+    
+    # Redis - Caching and Session Store
+    redis:
+        container_name: bte-cache-db
+        image: redis:7.0-alpine  # More specific version
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.5'
+                    memory: 512M
+                reservations:
+                    cpus: '0.3'
+                    memory: 512M
+        ports:
+            - "${REDIS_PORT:-6379}:6379"
+        command: redis-server --requirepass ${REDIS_PASSWORD:-redis_password}
+        volumes:
+            - redis_data:/data
+        healthcheck:
+            test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis_password}", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        networks:
+            - backend-template-express-net
+    
+    # Optional API service for development
+    # Uncomment to run the API in docker along with the databases
+    # NOTE: Will need to write the Dockerfile for the API before using this
+    # api:
+    #     container_name: bte-api
+    #     build: 
+    #         context: .
+    #         dockerfile: Dockerfile.dev
+    #     restart: unless-stopped
+    #     depends_on:
+    #         app_db:
+    #             condition: service_healthy
+    #         logs_db:
+    #             condition: service_healthy
+    #         redis:
+    #             condition: service_healthy
+    #     ports:
+    #         - "${PORT:-9001}:9001"
+    #     env_file: .env
+    #     environment:
+    #         - PG_APP_HOST=app_db
+    #         - PG_LOGS_HOST=logs_db
+    #         - REDIS_HOST=redis
+    #     volumes:
+    #         - .:/app
+    #         - /app/node_modules
+    #     networks:
+    #         - backend-template-express-net
+
+networks:
+    backend-template-express-net:
+        driver: bridge
+
+volumes:
+    app_db_data:
+        name: ${COMPOSE_PROJECT_NAME:-backend-template-express}-app-db-data
+    logs_db_data:
+        name: ${COMPOSE_PROJECT_NAME:-backend-template-express}-logs-db-data
+    redis_data:
+        name: ${COMPOSE_PROJECT_NAME:-backend-template-express}-redis-data
