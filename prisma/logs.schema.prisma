@@ -3,7 +3,7 @@
 // -------------------------------------------------------------------------
 generator logsClient {
     provider = "prisma-client-js"
-    output   = "../node_modules/@prisma/logs-client"
+    output   = "./generated/logs-client"
 }
 
 datasource logsDatabase {
