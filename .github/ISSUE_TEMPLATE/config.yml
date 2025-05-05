@@ -1,0 +1,12 @@
+<!-- filepath: c:\Users\nadee\Desktop\Projects\Github\backend-template-express\.github\ISSUE_TEMPLATE\config.yml -->
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/devnadeemashraf/backend-template-express#readme
+    about: Read the project documentation before creating an issue
+  - name: 💬 Discussions
+    url: https://github.com/devnadeemashraf/backend-template-express/discussions
+    about: Please ask and answer questions here for community engagement
+  - name: 🤔 FAQ
+    url: https://github.com/devnadeemashraf/backend-template-express/wiki/FAQ
+    about: Check if your question is already answered in the FAQ
