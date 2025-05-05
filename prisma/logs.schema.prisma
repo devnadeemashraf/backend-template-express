@@ -15,10 +15,8 @@ datasource logsDatabase {
 // ENUMERATIONS
 // -------------------------------------------------------------------------
 
-/**
- * Log severity levels for categorizing logs
- * Follows standard logging level hierarchy
- */
+// Log severity levels for categorizing logs
+// Follows standard logging level hierarchy
 enum LogLevel {
     TRACE // Detailed debugging information
     DEBUG // Debugging information
@@ -32,10 +30,8 @@ enum LogLevel {
 // REQUEST LOGGING
 // -------------------------------------------------------------------------
 
-/**
- * Request logs capture incoming HTTP requests
- * Provides insights into API usage patterns and performance
- */
+// Request logs capture incoming HTTP requests
+// Provides insights into API usage patterns and performance
 model RequestLog {
     id        String   @id @unique @default(uuid())
     timestamp DateTime @default(now()) @map("timestamp")
@@ -82,10 +78,8 @@ model RequestLog {
 // ERROR LOGGING
 // -------------------------------------------------------------------------
 
-/**
- * Error logs capture application errors
- * Helps in debugging and monitoring application health
- */
+// Error logs capture application errors
+// Helps in debugging and monitoring application health
 model ErrorLog {
     id        String   @id @unique @default(uuid())
     timestamp DateTime @default(now()) @map("timestamp")
@@ -131,10 +125,8 @@ model ErrorLog {
 // SECURITY AUDIT LOGGING
 // -------------------------------------------------------------------------
 
-/**
- * Audit logs for security-relevant operations
- * Critical for compliance and security incident investigations
- */
+// Audit logs for security-relevant operations
+// Critical for compliance and security incident investigations
 model AuditLog {
     id        String   @id @unique @default(uuid())
     timestamp DateTime @default(now()) @map("timestamp")

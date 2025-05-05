@@ -15,10 +15,8 @@ datasource appDatabase {
 // ENUMERATIONS
 // -------------------------------------------------------------------------
 
-/**
- * User account status options
- * Controls authentication capabilities and visibility
- */
+// Status options for user accounts
+// Controls authentication capabilities and visibility
 enum UserStatus {
     ACTIVE // Normal functioning account
     INACTIVE // Account temporarily deactivated by user
@@ -26,9 +24,7 @@ enum UserStatus {
     DELETED // Account permanently deactivated
 }
 
-/**
- * Status options for follow requests to private accounts
- */
+// Status options for follow requests to private accounts
 enum FollowRequestStatus {
     PENDING // Request sent but not yet reviewed
     ACCEPTED // Request approved by account owner
@@ -39,10 +35,8 @@ enum FollowRequestStatus {
 // USER AUTHENTICATION & PROFILE
 // -------------------------------------------------------------------------
 
-/**
- * Core user model for authentication and relationships
- * Contains essential fields for account management
- */
+// Core user model for authentication and relationships
+// Contains essential fields for account management
 model User {
     id String @id @default(uuid())
 
@@ -99,10 +93,8 @@ model User {
     @@map("users")
 }
 
-/**
- * User profile data beyond core authentication
- * Contains optional personal and display information
- */
+// User profile data beyond core authentication
+// Contains optional personal and display information
 model Profile {
     id     String @id @default(uuid())
     userId String @unique @map("user_id")
@@ -130,10 +122,8 @@ model Profile {
 // USER PREFERENCES & SETTINGS
 // -------------------------------------------------------------------------
 
-/**
- * User customization preferences and privacy settings
- * Controls visibility and notification behavior
- */
+// User customization preferences and privacy settings
+// Controls visibility and notification behavior
 model UserSettings {
     id     String @id @default(uuid())
     userId String @unique @map("user_id")
@@ -168,10 +158,8 @@ model UserSettings {
 // SECURITY & SESSIONS
 // -------------------------------------------------------------------------
 
-/**
- * Active user sessions for multi-device login management
- * Enables session tracking and revocation
- */
+// Active user sessions for multi-device login management
+// Enables session tracking and revocation
 model Session {
     id     String @id @default(uuid())
     userId String @map("user_id")
@@ -204,10 +192,8 @@ model Session {
 // SOCIAL GRAPH & RELATIONSHIPS
 // -------------------------------------------------------------------------
 
-/**
- * Follower/following connections between users
- * Represents established social graph connections
- */
+// Follower/following connections between users
+// Represents established social graph connections
 model Follow {
     id          String   @id @default(uuid())
     followerId  String   @map("follower_id") // User who is following
@@ -225,10 +211,8 @@ model Follow {
     @@map("follows")
 }
 
-/**
- * Pending follow requests for private accounts
- * Manages the approval workflow for private profiles
- */
+// Pending follow requests for private accounts
+// Manages the approval workflow for private profiles
 model FollowRequest {
     id         String              @id @default(uuid())
     senderId   String              @map("sender_id") // User requesting to follow
