@@ -5,8 +5,8 @@ import pino from "pino";
 // 2 - Configure to flush logs regularly for no clogging of memory
 // 3 - Add a way to filter logs by level (info, warn, error, etc.)
 // 4 - Add a way to format logs (JSON, plain text, etc.)
-export const logger = pino({
-  level: "info",
+const logger = pino({
+  level: "debug",
   transport: {
     target: "pino/file",
     options: {
@@ -16,4 +16,5 @@ export const logger = pino({
   },
 });
 
+export default logger;
 export type TLogger = typeof logger;

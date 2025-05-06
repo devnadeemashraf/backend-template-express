@@ -7,6 +7,6 @@ import "dotenv/config";
  * @param fallback Fallback value if the environment variable is not set
  * @returns Environment variable value or fallback
  */
-export default function getENV<T>(key: string, fallback: T) {
+export function getENV<T>(key: string, fallback: T) {
   return process.env[key] ? process.env[key] : fallback;
 }

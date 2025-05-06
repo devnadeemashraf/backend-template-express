@@ -1,3 +1,2 @@
-export { ErrorInternal } from "./ErrorInternal";
-export { resultPaginated } from "./pagination";
-export { logger } from "./logger";
+export { default as responseHandler } from "./responseHandler";
+export { default as logger } from "./logger";

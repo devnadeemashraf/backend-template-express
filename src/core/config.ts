@@ -1,4 +1,4 @@
-import { getENV } from "@/utils";
+import { getENV } from "@/utils/env";
 
 // General Settings
 const NODE_ENV = getENV<string>("NODE_ENV", "development");

@@ -1,7 +1,9 @@
 import { bootstrap } from "./bootstrap";
 
 import { server } from "./server";
-import { prismaClient } from "./libs/PrismaClient";
+
+// TODO: Move the Prisma Connection to Bootstrap
+// import { prismaClient } from "./libs/PrismaClient";
 
 import { PORT } from "./core/config";
 
@@ -11,14 +13,14 @@ bootstrap();
 
 server.listen(PORT || 3333, () => {
   logger.info(`Starting Server`);
-  prismaClient
-    .$connect()
-    .then(() => {
-      logger.info(`Server Running on PORT ${PORT}`);
-    })
-    .catch((err: unknown) => {
-      logger.error(`Error: ${err}`);
-      prismaClient.$disconnect();
-      process.exit(1);
-    });
+  // prismaClient
+  //   .$connect()
+  //   .then(() => {
+  //     logger.info(`Server Running on PORT ${PORT}`);
+  //   })
+  //   .catch((err: unknown) => {
+  //     logger.error(`Error: ${err}`);
+  //     prismaClient.$disconnect();
+  //     process.exit(1);
+  //   });
 });
