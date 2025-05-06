@@ -4,6 +4,7 @@ import { UserRole } from "prisma/generated/app-client";
 import { ROLES } from "@/core/rbac";
 
 import { TAction, TResource } from "@/types/rbac";
+import { responseHandler } from "@/helpers";
 
 // Cache for resolved permissions to improve performance
 // This is a simple in-memory cache for permissions
@@ -67,16 +68,12 @@ function hasPermission(
 /**
  * RBAC middleware factory
  * Creates a middleware that checks if the user has permission to perform an action on a resource
- * TODO: Update with a server response handler function
  */
 function rbac(resource: TResource, action: TAction) {
   return (req: Request, res: Response, next: NextFunction) => {
     // Check if user is authenticated
     if (!req.user || !req.user.role) {
-      return res.status(401).json({
-        status: "error",
-        message: "Authentication required",
-      });
+      return responseHandler.unauthorized(res, "Authentication required");
     }
 
     const userRole = req.user.role as UserRole;
@@ -87,10 +84,7 @@ function rbac(resource: TResource, action: TAction) {
     }
 
     // Permission denied
-    return res.status(403).json({
-      status: "error",
-      message: "Permission denied",
-    });
+    return responseHandler.forbidden(res, "Permission denied");
   };
 }
 

@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 
-import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from "@/core/jwt";
+import { responseHandler } from "@/helpers";
 import { verifyAccessToken, verifyRefreshToken, generateAccessToken } from "@/utils/jwt";
+import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from "@/core/jwt";
 
 /**
  * Authentication guard middleware
  * Verifies JWT tokens and handles token refresh flow
- * TODO: Update with generic response handler for consistent responses
  */
 function authGuard(req: Request, res: Response, next: NextFunction) {
   // Extract tokens from cookies
@@ -17,10 +17,7 @@ function authGuard(req: Request, res: Response, next: NextFunction) {
 
   // No tokens provided
   if (!accessToken && !refreshToken) {
-    return res.status(401).json({
-      status: "error",
-      message: "Unauthorized: Authentication required",
-    });
+    return responseHandler.unauthorized(res, "Unauthorized: Authentication required");
   }
 
   // Try to validate access token first
@@ -84,15 +81,11 @@ function authGuard(req: Request, res: Response, next: NextFunction) {
 
   // This should never be reached due to the initial check,
   // but adding as a fallback for completeness
-  return res.status(401).json({
-    status: "error",
-    message: "Authentication failed",
-  });
+  return responseHandler.unauthorized(res, "Unauthorized: Authentication required");
 }
 
 /**
  * Helper function to handle authentication errors
- * TODO: Later, update to use a generic response handler for consistent error responses
  */
 function handleAuthError(err: unknown, res: Response) {
   // Clear invalid cookies
@@ -108,10 +101,7 @@ function handleAuthError(err: unknown, res: Response) {
     message = "Invalid authentication token";
   }
 
-  return res.status(401).json({
-    status: "error",
-    message,
-  });
+  return responseHandler.unauthorized(res, message);
 }
 
 export default authGuard;
