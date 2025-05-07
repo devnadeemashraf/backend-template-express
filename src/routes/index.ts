@@ -1,13 +1,16 @@
 import { Router } from "express";
 
-import { PREFIX_ROUTE } from "../core/url"; // Prefix Global route
-//* Routes *//
+/* Route Versioning */
+import { PREFIX_ROUTE_V1 } from "@/core/url";
+
+/* Routes */
+import { authRoutes } from "./auth.routes";
 import { userRoutes } from "./user.routes";
-import { postRoutes } from "./post.routes";
 
-const routes = Router();
+/* Router */
+const routes: Router = Router();
 
-routes.use(`${PREFIX_ROUTE}/users`, userRoutes);
-routes.use(`${PREFIX_ROUTE}/posts`, postRoutes);
+routes.use(`${PREFIX_ROUTE_V1}/auth`, authRoutes);
+routes.use(`${PREFIX_ROUTE_V1}/users`, userRoutes);
 
 export { routes };

@@ -70,6 +70,8 @@ const REDIS_PASSWORD = getENV<string>("REDIS_PASSWORD", "redis_password");
 const REDIS_DB = getENV<number>("REDIS_DB", 0);
 const REDIS_TTL = getENV<number>("REDIS_TTL", 3600);
 
+const REDIS_URL = `redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}/${REDIS_DB}`;
+
 // Monitoring & Logging
 const LOG_LEVEL = getENV<string>("LOG_LEVEL", "debug");
 const DEBUG = getENV<string>("DEBUG", "true");
@@ -135,6 +137,7 @@ export {
   REDIS_PASSWORD,
   REDIS_DB,
   REDIS_TTL,
+  REDIS_URL,
 
   // Monitoring & Logging
   LOG_LEVEL,

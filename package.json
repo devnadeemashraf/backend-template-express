@@ -45,6 +45,7 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "pino": "^9.6.0",
+    "redis": "^5.0.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
@@ -58,6 +59,7 @@
     "@types/jest": "^29.5.11",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/morgan": "^1.9.9",
+    "@types/redis": "^4.0.11",
     "@types/supertest": "^6.0.2",
     "@types/uuid": "^9.0.7",
     "eslint": "^9.26.0",
