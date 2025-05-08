@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
 import { IAuthRepository } from "@/repositories";
 
 import { ILoginWithUsernameUseCaseRequest } from "./LoginWithUsernameDTO";
@@ -11,15 +10,20 @@ export class LoginWithUsernameUseCase {
   async execute(data: ILoginWithUsernameUseCaseRequest): Promise<void> {
     const { username, password } = data;
 
-    // If either of the username or password is not provided, throw an error
-    if (!username || !password) {
-      throw new Error("Username and password are required.");
+    // If Username is empty, throw an error
+    if (!username) {
+      throw new Error("Username cannot be empty.");
+    }
+
+    // If Password is empty, throw an error
+    if (!password) {
+      throw new Error("Password cannot be empty.");
     }
 
     // Try Fetching Username from Database using the Repository
-    const user = await this.authRepository.getUserByUsername(username);
+    const isUsernameInDatabase = await this.isUsernameTaken(username);
     // Check if the username and password are valid
-    if (!user) {
+    if (!isUsernameInDatabase) {
       throw new Error("Username not found.");
     }
 
@@ -30,7 +34,7 @@ export class LoginWithUsernameUseCase {
     }
 
     // Login User - Create a new User session and returnt he session details
-    const session = await this.createSession();
+    const session = await this.createNewUserSession();
 
     // Returnt the Result
     return;
@@ -39,6 +43,7 @@ export class LoginWithUsernameUseCase {
   private async isUsernameTaken(username: string): Promise<boolean> {
     // Add logic to check if the username is taken
     // Use concept such as - bloom filter, redis layer, etc.
+    const user = await this.authRepository.doesUserExistByUsername(username);
     return true;
   }
 
@@ -47,14 +52,14 @@ export class LoginWithUsernameUseCase {
     return true;
   }
 
-  private async createSession(): Promise<void> {
+  private async createNewUserSession(): Promise<void> {
     // Add logic to create a session for the user
     // Do everything that needs to be done
     // Finally update the Database entry for the user
     // to reflect the new session details
 
     // Update the Databse Entry for the User
-    await this.authRepository.updateUser("123", {});
+    await this.authRepository.updateUserById("123", {});
 
     // Returnt the Updated Session to the 'execute' method
     return;
