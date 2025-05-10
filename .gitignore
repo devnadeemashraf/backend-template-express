@@ -135,5 +135,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# Prisma Local Development
+# Prisma & Local Development
 prisma/generated
+TODO.md

@@ -104,8 +104,9 @@ class ThreadsManager {
       );
     }
 
-    const workerFileName = (workerName || this.options.defaultWorker) + ".js";
-    const workerPath = fileSystem.joinPaths(__dirname, workerFileName);
+    const workerFileName =
+      (workerName || this.options.defaultWorker) + fileSystem.getApptFileExtension();
+    const workerPath = fileSystem.joinPaths("root", `src/workers/${workerFileName}`);
 
     // Check if worker file exists
     if (!(await fileSystem.exists(workerPath))) {

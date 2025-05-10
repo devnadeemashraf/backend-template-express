@@ -7,6 +7,7 @@ import { pipeline } from "stream/promises";
 import { AppError } from "@/libs/AppError";
 
 import { IDirectoryOptions, IFileInfo, IFileOptions, IListOptions } from "./types";
+import { isProduction } from "@/utils/server";
 
 class FileSystem {
   /**
@@ -592,11 +593,12 @@ class FileSystem {
 
   /**
    * Joins path segments
+   * @param resolveFrom - Path to resolve from ("root" or "current_module")
    * @param paths - Path segments to join
    * @returns Joined path
    */
-  static joinPaths(...paths: string[]): string {
-    return path.join(...paths);
+  static joinPaths(resolveFrom: "root" | "current_module", ...paths: string[]): string {
+    return path.join(resolveFrom == "root" ? process.cwd() : __dirname, ...paths);
   }
 
   /**
@@ -628,6 +630,15 @@ class FileSystem {
    */
   static getDirname(filePath: string): string {
     return path.dirname(filePath);
+  }
+
+  /**
+   * Gets the file extension based on the current environment
+   * @description Should be used for JS and TS files ONLY
+   * @returns The Appropriate file extension based of current environment
+   */
+  static getApptFileExtension(): string {
+    return isProduction() ? ".js" : ".ts";
   }
 }
 

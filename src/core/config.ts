@@ -29,7 +29,7 @@ export const ENCRYPTION_KEY = getENV<string>(
 /** File path for storing the encrypted BloomFilter state */
 export const BLOOM_FILTER_PATH = getENV<string>(
   "BLOOM_FILTER_PATH",
-  "./local/state/bloomfilters.enc",
+  "./data/local/enc/bloomfilters.enc",
 );
 /** Expected number of elements to be stored in the BloomFilter */
 export const BLOOM_FILTER_EXPECTED_ELEMENTS = getENV<number>(
