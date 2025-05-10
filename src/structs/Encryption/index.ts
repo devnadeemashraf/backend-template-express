@@ -1,7 +1,4 @@
 import crypto from "crypto";
-import fs from "fs/promises";
-import path from "path";
-import { IBloomFilterState } from "./BloomFilter";
 
 /**
  * Encryption and decryption utility functions using AES-256-GCM
@@ -123,67 +120,6 @@ export class Encryption {
       return outputEncoding ? decrypted.toString(outputEncoding) : decrypted;
     } catch (error) {
       throw new Error(`Decryption failed: ${(error as Error).message}`);
-    }
-  }
-
-  /**
-   * Saves a BloomFilter state to an encrypted file
-   * @param state - The BloomFilter state to save
-   * @param filePath - Path where the encrypted state will be saved
-   * @param password - Password for encryption
-   * @returns Promise that resolves when the state is saved
-   */
-  async saveBloomFilterState(
-    state: IBloomFilterState,
-    filePath: string,
-    password: string,
-  ): Promise<void> {
-    try {
-      // Ensure directory exists
-      const dir = path.dirname(filePath);
-      await fs.mkdir(dir, { recursive: true });
-
-      // Encrypt the state
-      const stateJson = JSON.stringify(state);
-      const encryptedState = await this.encrypt(stateJson, password);
-
-      // Write to file
-      await fs.writeFile(filePath, encryptedState, "utf8");
-    } catch (error) {
-      throw new Error(`Failed to save BloomFilter state: ${(error as Error).message}`);
-    }
-  }
-
-  /**
-   * Loads a BloomFilter state from an encrypted file
-   * @param filePath - Path to the encrypted state file
-   * @param password - Password for decryption
-   * @returns Promise that resolves to the decrypted BloomFilter state
-   */
-  async loadBloomFilterState(filePath: string, password: string): Promise<IBloomFilterState> {
-    try {
-      // Read encrypted file
-      const encryptedState = await fs.readFile(filePath, "utf8");
-
-      // Decrypt the state
-      const decryptedJson = (await this.decrypt(encryptedState, password, "utf8")) as string;
-
-      // Parse the state
-      const state = JSON.parse(decryptedJson) as IBloomFilterState;
-
-      // Validate the state
-      if (
-        !state ||
-        !Array.isArray(state.bitArray) ||
-        typeof state.size !== "number" ||
-        typeof state.numberOfHashFunctions !== "number"
-      ) {
-        throw new Error("Invalid bloom filter state");
-      }
-
-      return state;
-    } catch (error) {
-      throw new Error(`Failed to load BloomFilter state: ${(error as Error).message}`);
     }
   }
 

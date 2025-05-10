@@ -1,17 +1,32 @@
-import { logger } from "./helpers";
+import path from "path";
+
+import { logger } from "@/helpers";
+import { BLOOM_FILTER_PATH, ENCRYPTION_KEY } from "@/core/config";
+import encryption from "./structs/Encryption";
 
 function registerGlobalUtils() {
   global.logger = logger;
 }
 
+async function loadBloomFilterState() {
+  logger.info("Loading Bloom Filter State from disk");
+  const statePath = path.join(__dirname, BLOOM_FILTER_PATH);
+  const password = ENCRYPTION_KEY;
+
+  await encryption.loadBloomFilterState(statePath, password);
+  logger.info("Finished Loading Bloom Filter State from disk");
+}
+
 /**
  * Main bootstrap function that initializes the application
  */
-export function bootstrap() {
+export async function bootstrap() {
   logger.info("Starting application bootstrap process");
-
   // Register global utilities first
   registerGlobalUtils();
+
+  // Load the Bloom Filter state
+  await loadBloomFilterState();
 
   // Initialize any required services
   // This can be expanded as needed

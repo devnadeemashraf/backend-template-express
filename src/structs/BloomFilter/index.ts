@@ -2,15 +2,12 @@
 import crypto from "crypto";
 import xxhash from "xxhash-wasm"; // You'll need to install: npm install xxhash-wasm
 
-/**
- * Interface representing the serializable state of a BloomFilter
- */
-export interface IBloomFilterState {
-  size: number;
-  numberOfHashFunctions: number;
-  bitArray: number[];
-  expectedElements?: number; // Optional for self-optimization
-}
+import { AppError } from "@/libs/AppError";
+
+import fileSystem from "@/structs/FileSystem";
+import encryption from "@/structs/Encryption";
+
+import { IBloomFilterState } from "./types";
 
 /**
  * Bloom Filter implementation for probabilistic set membership testing
@@ -354,6 +351,109 @@ export class BloomFilter {
       this.import(state);
     } catch (error) {
       throw new Error(`Failed to load encrypted state: ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Saves the Bloom Filter state to an encrypted file
+   * @param filePath - Path where the encrypted state will be saved
+   * @param password - Password for encryption
+   * @returns Promise that resolves when the state is saved
+   */
+  async saveBloomFilterState(filePath: string, password: string): Promise<void> {
+    try {
+      // Export the current state
+      const state = this.export();
+      const stateJson = JSON.stringify(state);
+
+      // Encrypt the state
+      const encryptedState = await encryption.encrypt(stateJson, password);
+
+      // Ensure directory exists and write to file
+      await fileSystem.writeFile(filePath, encryptedState, { encoding: "utf8" });
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      throw new AppError(
+        "INTERNAL_SERVER_ERROR",
+        `Failed to save BloomFilter state: ${(error as Error).message}`,
+      );
+    }
+  }
+
+  /**
+   * Loads a BloomFilter state from an encrypted file
+   * @param filePath - Path to the encrypted state file
+   * @param password - Password for decryption
+   * @returns Promise that resolves when the state is loaded
+   */
+  async loadBloomFilterState(filePath: string, password: string): Promise<void> {
+    try {
+      // Check if the file exists
+      const exists = await fileSystem.exists(filePath);
+      if (!exists) {
+        throw new AppError("NOT_FOUND", `BloomFilter state file not found at: ${filePath}`);
+      }
+
+      // Read the encrypted file
+      const encryptedState = (await fileSystem.readFile(filePath, { encoding: "utf8" })) as string;
+
+      // Decrypt the state
+      const decryptedJson = (await encryption.decrypt(encryptedState, password, "utf8")) as string;
+
+      try {
+        // Parse the state
+        const state = JSON.parse(decryptedJson) as IBloomFilterState;
+
+        // Import the state
+        this.import(state);
+      } catch (parseError) {
+        throw new AppError(
+          "INTERNAL_SERVER_ERROR",
+          "Failed to parse BloomFilter state: Invalid JSON format - " +
+            (parseError as Error).message,
+        );
+      }
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      throw new AppError(
+        "INTERNAL_SERVER_ERROR",
+        `Failed to load BloomFilter state: ${(error as Error).message}`,
+      );
+    }
+  }
+
+  /**
+   * Convenience method to save the BloomFilter state to the default location
+   * @param password - Password for encryption
+   * @param basePath - Optional base path (defaults to ./data)
+   * @returns Promise that resolves when the state is saved
+   */
+  async saveState(password: string, basePath: string = "./data"): Promise<void> {
+    const filePath = fileSystem.joinPaths(basePath, "bloomfilter.enc");
+    await this.saveBloomFilterState(filePath, password);
+  }
+
+  /**
+   * Convenience method to load the BloomFilter state from the default location
+   * @param password - Password for decryption
+   * @param basePath - Optional base path (defaults to ./data)
+   * @returns Promise that resolves when the state is loaded
+   */
+  async loadState(password: string, basePath: string = "./data"): Promise<void> {
+    const filePath = fileSystem.joinPaths(basePath, "bloomfilter.enc");
+    try {
+      await this.loadBloomFilterState(filePath, password);
+    } catch (error) {
+      if (error instanceof AppError && (error as AppError).statusName === "NOT_FOUND") {
+        // Handle case where no previous state exists - just keep current state
+        console.log(`No BloomFilter state found at ${filePath}, using current state`);
+        return;
+      }
+      throw error;
     }
   }
 }
