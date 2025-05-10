@@ -47,7 +47,8 @@
     "morgan": "^1.10.0",
     "pino": "^9.6.0",
     "redis": "^5.0.1",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "xxhash-wasm": "^1.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.26.0",
