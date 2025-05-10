@@ -7,20 +7,13 @@ import { NotFoundError, UnauthorizedError, ValidationError } from "@/libs/AppErr
 import { LoginWithUsernameUseCase } from "./LoginWithUsernameUseCase";
 
 export class LoginWithUsernameController extends BaseController {
-  useCase: string;
-
   constructor(private loginWithUsernameUseCase: LoginWithUsernameUseCase) {
-    super();
-    this.useCase = "Login with Username";
+    super("Login with Username");
   }
 
   async handle(request: Request, response: Response): Promise<Response> {
     // Validate the incoming request
-    const validationErrorResponse = await this.validateIncomingRequest(
-      request,
-      response,
-      this.useCase,
-    );
+    const validationErrorResponse = await this.validateIncomingRequest(request, response);
     // If there are validation errors, return the response and stop further processing
     if (validationErrorResponse) {
       return validationErrorResponse;
@@ -40,6 +33,9 @@ export class LoginWithUsernameController extends BaseController {
 
       return responseHandler.created(response, "User logged in successfully.", data);
     } catch (err) {
+      // Log the error for tracking and debugging
+      this.logError({ username, error: err });
+
       // Handle specific error types
       if (err instanceof UnauthorizedError) {
         return responseHandler.unauthorized(response, err.message);
@@ -48,13 +44,7 @@ export class LoginWithUsernameController extends BaseController {
       } else if (err instanceof NotFoundError) {
         return responseHandler.notFound(response, err.message);
       } else {
-        // Log unexpected errors
-        logger.error({
-          useCase: this.useCase,
-          error: err,
-          context: { username },
-        });
-        return responseHandler.serverError(response, "An unexpected error occurred during login");
+        return responseHandler.serverError(response, (err as Error).message);
       }
     }
   }
