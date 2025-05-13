@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-var */
-import { Logger } from "pino";
+import { Logger } from "@/libs/common/Logger";
 
 declare global {
   // Global variable for logger
@@ -8,6 +8,7 @@ declare global {
   var logger: Logger;
 
   // Extend Express Namespace
+  // TODO: Update user object in Request interface to match your application's user object
   namespace Express {
     interface Request {
       user?: {

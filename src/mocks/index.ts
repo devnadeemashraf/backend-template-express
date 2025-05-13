@@ -1,2 +1,2 @@
-export { createUserMock, updateUserMock } from "./user.mocks";
-export { createPostMock, updatePostMock } from "./post.mocks";
+export { createUserMock, updateUserMock } from "./userMocks";
+export { createPostMock, updatePostMock } from "./postMocks";

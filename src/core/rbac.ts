@@ -1,5 +1,5 @@
 import { UserRole } from "prisma/generated/app-client";
-import { IRoleDefinition } from "@/types/rbac";
+import { IRoleDefinition } from "@/interfaces/IRoleBasedAccessControl";
 
 /**
  * RBAC permissions map - defines what each role can do

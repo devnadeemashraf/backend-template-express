@@ -4,9 +4,9 @@ import { Router } from "express";
 import { PREFIX_ROUTE_V1 } from "@/core/url";
 
 /* Routes */
-import { healthRoutes } from "./health.routes";
-import { authRoutes } from "./auth.routes";
-import { userRoutes } from "./user.routes";
+import { healthRoutes } from "./healthRoutes";
+import { authRoutes } from "./authRoutes";
+import { userRoutes } from "./userRoutes";
 
 /* Router */
 const routes: Router = Router();

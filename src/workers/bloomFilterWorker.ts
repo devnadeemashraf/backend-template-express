@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { parentPort, threadId } from "worker_threads";
-import BloomFilter from "@/structs/BloomFilter";
+import BloomFilter from "@/libs/common/BloomFilter";
 import { BLOOM_FILTER_PATH, ENCRYPTION_KEY } from "@/core/config";
 
 // Initialize BloomFilter

@@ -1,3 +1,3 @@
-export { default as authGuard } from "./authGuard";
-export { default as rbac } from "./rbac";
-export { default as errorHandler } from "./errorHandler";
+export { default as authGuardMiddleware } from "./authGuardMiddleware";
+export { default as rbacMiddleware } from "./rbacMiddleware";
+export { default as errorHandlerMiddleware } from "./errorHandlerMiddleware";

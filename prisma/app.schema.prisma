@@ -39,6 +39,80 @@ enum FollowRequestStatus {
     REJECTED // Request denied by account owner
 }
 
+// List of supported timezones for user location settings, including both 
+// named time zones and UTC offsets with half-hour intervals for precision.
+
+enum Timezone {
+    // Named Timezones
+    // These are standard time zones with their UTC offsets
+    UTC // Coordinated Universal Time (UTC+0)
+    GMT // Greenwich Mean Time (UTC+0)
+    PST // Pacific Standard Time (UTC-8)
+    EST // Eastern Standard Time (UTC-5)
+    CST // Central Standard Time (UTC-6)
+    MST // Mountain Standard Time (UTC-7)
+    IST // Indian Standard Time (UTC+5:30)
+    CET // Central European Time (UTC+1)
+    EET // Eastern European Time (UTC+2)
+    JST // Japan Standard Time (UTC+9)
+    AEST // Australian Eastern Standard Time (UTC+10)
+    AEDT // Australian Eastern Daylight Time (UTC+11)
+    BST // British Summer Time (UTC+1)
+    CEST // Central European Summer Time (UTC+2)
+    KST // Korea Standard Time (UTC+9)
+    NZST // New Zealand Standard Time (UTC+12)
+    NZDT // New Zealand Daylight Time (UTC+13)
+    ART // Argentina Time (UTC-3)
+    BRT // Brasilia Time (UTC-3)
+    NST // Newfoundland Standard Time (UTC-3:30)
+    AKST // Alaska Standard Time (UTC-9)
+    HST // Hawaii-Aleutian Standard Time (UTC-10)
+    WET // Western European Time (UTC+0)
+    MSK // Moscow Standard Time (UTC+3)
+    SGT // Singapore Time (UTC+8)
+
+    // UTC Offsets (with every half-hour interval)
+    UTC_PLUS_0 // UTC +0
+    UTC_PLUS_0_5 // UTC +0:30 (e.g., India Standard Time)
+    UTC_PLUS_1 // UTC +1
+    UTC_PLUS_1_5 // UTC +1:30
+    UTC_PLUS_2 // UTC +2
+    UTC_PLUS_2_5 // UTC +2:30
+    UTC_PLUS_3 // UTC +3
+    UTC_PLUS_3_5 // UTC +3:30 (e.g., Iran Standard Time)
+    UTC_PLUS_4 // UTC +4
+    UTC_PLUS_4_5 // UTC +4:30
+    UTC_PLUS_5 // UTC +5
+    UTC_PLUS_5_5 // UTC +5:30 (e.g., Indian Standard Time)
+    UTC_PLUS_6 // UTC +6
+    UTC_PLUS_6_5 // UTC +6:30
+    UTC_PLUS_7 // UTC +7
+    UTC_PLUS_7_5 // UTC +7:30
+    UTC_PLUS_8 // UTC +8
+    UTC_PLUS_8_5 // UTC +8:30
+    UTC_PLUS_9 // UTC +9 (e.g., Japan Standard Time)
+    UTC_PLUS_9_5 // UTC +9:30 (e.g., Australian Central Standard Time)
+    UTC_PLUS_10 // UTC +10
+    UTC_PLUS_10_5 // UTC +10:30
+    UTC_PLUS_11 // UTC +11
+    UTC_PLUS_11_5 // UTC +11:30
+    UTC_PLUS_12 // UTC +12
+    UTC_PLUS_12_5 // UTC +12:30
+    UTC_MINUS_1 // UTC -1
+    UTC_MINUS_2 // UTC -2
+    UTC_MINUS_3 // UTC -3
+    UTC_MINUS_3_5 // UTC -3:30
+    UTC_MINUS_4 // UTC -4
+    UTC_MINUS_5 // UTC -5
+    UTC_MINUS_6 // UTC -6
+    UTC_MINUS_7 // UTC -7
+    UTC_MINUS_8 // UTC -8 (e.g., Pacific Standard Time)
+    UTC_MINUS_9 // UTC -9
+    UTC_MINUS_10 // UTC -10
+    UTC_MINUS_11 // UTC -11
+    UTC_MINUS_12 // UTC -12
+}
+
 // -------------------------------------------------------------------------
 // USER AUTHENTICATION & PROFILE
 // -------------------------------------------------------------------------
@@ -46,6 +120,7 @@ enum FollowRequestStatus {
 // Core user model for authentication and relationships
 // Contains essential fields for account management
 model User {
+    // Unique identifiers
     id String @id @default(uuid())
 
     // -------------------------
@@ -86,6 +161,7 @@ model User {
     // Extended data
     profile  Profile?
     settings UserSettings?
+    location UserLocation?
     sessions Session[]
 
     // Social graph
@@ -109,11 +185,14 @@ model Profile {
     userId String @unique @map("user_id")
 
     // Personal information
-    firstName String? @map("first_name")
-    lastName  String? @map("last_name")
-    bio       String?
-    avatar    String? // URL to avatar image
-    phone     String?
+    firstName  String? @map("first_name")
+    lastName   String? @map("last_name")
+    bio        String? @map("bio")
+    avatar     String? @map("avatar")
+    phone      String? @map("phone")
+    birthDate  Int?    @map("birth_date")
+    birthMonth Int?    @map("birth_month")
+    birthYear  Int?    @map("birth_year")
 
     // Timestamps
     createdAt DateTime @default(now()) @map("created_at")
@@ -124,7 +203,39 @@ model Profile {
 
     // Database optimizations
     @@index([userId])
+    @@index([firstName, lastName])
     @@map("profiles")
+}
+
+model UserLocation {
+    id     String @id @default(uuid())
+    userId String @map("user_id")
+
+    // Location Data
+    country                    String?   @map("country")
+    state                      String?   @map("state")
+    city                       String?   @map("city")
+    postalCode                 String?   @map("postal_code")
+    streetAddress              String?   @map("street_address")
+    lat                        Float?    @map("latitude")
+    lng                        Float?    @map("longitude")
+    timezoneId                 Timezone? @map("timezone_id")
+    internationalDialingPrefix String?   @map("international_dialing_prefix")
+
+    // Timestamps
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // Relationships
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    // Database optimizations
+    @@index([userId])
+    @@index([lat, lng]) // Geospatial index for location-based queries
+    @@index([country])
+    @@index([state, city, postalCode])
+    @@index([streetAddress])
+    @@map("user_locations")
 }
 
 // -------------------------------------------------------------------------

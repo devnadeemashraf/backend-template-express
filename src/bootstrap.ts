@@ -2,7 +2,7 @@ import path from "path";
 
 import { logger } from "@/helpers";
 import { BLOOM_FILTER_PATH, ENCRYPTION_KEY } from "@/core/config";
-import encryption from "./structs/Encryption";
+import encryption from "./libs/common/Encryption";
 
 function registerGlobalUtils() {
   global.logger = logger;
